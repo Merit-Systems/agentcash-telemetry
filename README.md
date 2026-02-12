@@ -2,6 +2,8 @@
 
 Telemetry package for x402-protected API servers. Extracts identity headers, logs invocations to ClickHouse, and extracts verified wallet addresses from x402 payments and SIWX auth.
 
+For the full telemetry standard (client header contract, ClickHouse schema, client registry, migration plan), see the [telemetry spec](docs/telemetry-spec.md).
+
 ## Install
 
 ```bash
