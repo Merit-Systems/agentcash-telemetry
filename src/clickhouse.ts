@@ -5,6 +5,16 @@ let clickhouseClient: ReturnType<typeof import('@clickhouse/client').createClien
 const TABLE = 'mcp_resource_invocations';
 
 /**
+ * Set a pre-created ClickHouse client directly.
+ * Use this when dynamic import('@clickhouse/client') doesn't work
+ * in your bundler environment.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function setClickhouseClient(client: any): void {
+  clickhouseClient = client;
+}
+
+/**
  * Initialize the ClickHouse client singleton.
  * Call once at app startup (e.g., in instrumentation.ts).
  */

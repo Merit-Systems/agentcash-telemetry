@@ -1,5 +1,5 @@
 import type { TelemetryConfig } from './types';
-import { initClickhouse } from './clickhouse';
+import { initClickhouse, setClickhouseClient } from './clickhouse';
 
 let configuredOrigin: string | undefined;
 
@@ -24,7 +24,11 @@ let configuredOrigin: string | undefined;
  * ```
  */
 export async function initTelemetry(config: TelemetryConfig): Promise<void> {
-  await initClickhouse(config.clickhouse);
+  if (config.clickhouseClient) {
+    setClickhouseClient(config.clickhouseClient);
+  } else {
+    await initClickhouse(config.clickhouse);
+  }
   if (config.origin) {
     configuredOrigin = config.origin;
   }
