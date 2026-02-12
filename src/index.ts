@@ -1,15 +1,11 @@
-// Core
+// Core — no optional deps required
 export { initTelemetry } from './init';
 export { withTelemetry } from './telemetry';
-export { withSiwxTelemetry } from './siwx';
-export type { SiwxTelemetryContext } from './siwx';
-
-// Route builder (convenience layer)
-export { createRouteBuilder, HttpError } from './route-builder';
-export type { RouteBuilderOptions } from './route-builder';
+export { extractVerifiedWallet } from './extract-wallet';
 
 // Types
 export type { McpResourceInvocation, TelemetryContext, TelemetryConfig } from './types';
 
-// Utilities
-export { extractVerifiedWallet } from './extract-wallet';
+// SIWX and route builder are separate entrypoints:
+//   import { withSiwxTelemetry } from '@merit-systems/x402-server-telemetry/siwx';
+//   import { createRouteBuilder } from '@merit-systems/x402-server-telemetry/builder';

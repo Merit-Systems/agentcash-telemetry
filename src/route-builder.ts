@@ -2,18 +2,20 @@
  * Convenience route builder that composes telemetry + validation + x402 wrapping.
  * This is optional — servers can use withTelemetry directly.
  *
- * The builder delegates to @x402/next and zod for payment and validation.
- * It does NOT implement payment verification or protocol logic itself.
+ * Import from '@merit-systems/x402-server-telemetry/builder'.
+ * Requires peer deps: @x402/next, zod (^4), @x402/extensions
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'crypto';
+import { withX402 } from '@x402/next';
+import { z, type ZodType } from 'zod';
+import { declareDiscoveryExtension } from '@x402/extensions/bazaar';
 import type { McpResourceInvocation, TelemetryContext } from './types';
 import { insertInvocation } from './clickhouse';
 import { extractVerifiedWallet } from './extract-wallet';
 import { getOrigin } from './init';
 
-// Re-export HttpError for route handlers
 export class HttpError extends Error {
   constructor(
     message: string,
@@ -32,9 +34,9 @@ type AcceptsOption = {
 
 type BuilderConfig<TBody = unknown, TQuery = unknown, TOutput = unknown> = {
   accepts: AcceptsOption[];
-  bodySchema?: import('zod').ZodType<TBody>;
-  querySchema?: import('zod').ZodType<TQuery>;
-  outputSchema?: import('zod').ZodType<TOutput>;
+  bodySchema?: ZodType<TBody>;
+  querySchema?: ZodType<TQuery>;
+  outputSchema?: ZodType<TOutput>;
   outputExample?: TOutput;
   description?: string;
 };
@@ -124,31 +126,31 @@ class RouteBuilder<TBody = unknown, TQuery = unknown, TOutput = unknown> {
     );
   }
 
-  body<T>(schema: import('zod').ZodType<T>) {
+  body<T>(schema: ZodType<T>) {
     return new RouteBuilder<T, TQuery, TOutput>(
       {
         ...this.config,
-        bodySchema: schema as import('zod').ZodType<unknown>,
+        bodySchema: schema as ZodType<unknown>,
       } as BuilderConfig<T, TQuery, TOutput>,
       this.options,
     );
   }
 
-  query<T>(schema: import('zod').ZodType<T>) {
+  query<T>(schema: ZodType<T>) {
     return new RouteBuilder<TBody, T, TOutput>(
       {
         ...this.config,
-        querySchema: schema as import('zod').ZodType<unknown>,
+        querySchema: schema as ZodType<unknown>,
       } as BuilderConfig<TBody, T, TOutput>,
       this.options,
     );
   }
 
-  output<T>(schema: import('zod').ZodType<T>, example?: T) {
+  output<T>(schema: ZodType<T>, example?: T) {
     return new RouteBuilder<TBody, TQuery, T>(
       {
         ...this.config,
-        outputSchema: schema as import('zod').ZodType<unknown>,
+        outputSchema: schema as ZodType<unknown>,
         outputExample: example,
       } as BuilderConfig<TBody, TQuery, T>,
       this.options,
@@ -410,79 +412,41 @@ class RouteBuilder<TBody = unknown, TQuery = unknown, TOutput = unknown> {
       );
     }
 
-    try {
-      const { withX402 } = require('@x402/next') as typeof import('@x402/next');
-      return withX402(coreHandler, routeConfig, this.options.x402Server as never);
-    } catch {
-      console.warn(
-        '[x402-telemetry] @x402/next not available, returning handler without x402 wrapping',
-      );
-      return coreHandler;
-    }
+    return withX402(coreHandler, routeConfig, this.options.x402Server as never);
   }
 }
 
 function buildDiscoveryExtensions(
-  bodySchema?: import('zod').ZodType<unknown>,
-  querySchema?: import('zod').ZodType<unknown>,
-  outputSchema?: import('zod').ZodType<unknown>,
+  bodySchema?: ZodType<unknown>,
+  querySchema?: ZodType<unknown>,
+  outputSchema?: ZodType<unknown>,
   outputExample?: unknown,
 ): Record<string, unknown> | undefined {
-  try {
-    const { z } = require('zod') as typeof import('zod');
-
-    const { declareDiscoveryExtension } = require('@x402/extensions/bazaar') as {
-      declareDiscoveryExtension: (config: never) => Record<string, unknown>;
-    };
-
-    const inputJsonSchema = bodySchema
-      ? z.toJSONSchema(bodySchema, { target: 'draft-2020-12' })
-      : querySchema
-        ? z.toJSONSchema(querySchema, { target: 'draft-2020-12' })
-        : undefined;
-
-    const outputJsonSchema = outputSchema
-      ? z.toJSONSchema(outputSchema, { target: 'draft-2020-12' })
+  const inputJsonSchema = bodySchema
+    ? z.toJSONSchema(bodySchema, { target: 'draft-2020-12' })
+    : querySchema
+      ? z.toJSONSchema(querySchema, { target: 'draft-2020-12' })
       : undefined;
 
-    if (!inputJsonSchema) return undefined;
+  const outputJsonSchema = outputSchema
+    ? z.toJSONSchema(outputSchema, { target: 'draft-2020-12' })
+    : undefined;
 
-    const config = {
-      bodyType: bodySchema ? 'json' : undefined,
-      inputSchema: inputJsonSchema,
-      output: outputJsonSchema
-        ? { schema: outputJsonSchema, example: outputExample ?? {} }
-        : undefined,
-    };
+  if (!inputJsonSchema) return undefined;
 
-    return { ...declareDiscoveryExtension(config as never) };
-  } catch {
-    // zod or @x402/extensions not available
-    return undefined;
-  }
+  const config = {
+    bodyType: bodySchema ? 'json' : undefined,
+    inputSchema: inputJsonSchema,
+    output: outputJsonSchema
+      ? { schema: outputJsonSchema, example: outputExample ?? {} }
+      : undefined,
+  };
+
+  return { ...declareDiscoveryExtension(config as never) };
 }
 
 /**
  * Create a new route builder instance.
- *
- * Usage:
- * ```typescript
- * import { createRouteBuilder } from '@merit-systems/x402-server-telemetry';
- * import { x402Server } from './x402-server'; // your app's x402 server setup
- *
- * const route = createRouteBuilder({ x402Server });
- *
- * export const POST = route
- *   .price('0.05', 'base:8453')
- *   .body(searchSchema)
- *   .handler(async ({ body }) => searchPeople(body));
- * ```
- *
- * For routes without x402 pricing, x402Server is not required:
- * ```typescript
- * const route = createRouteBuilder();
- * export const POST = route.body(schema).handler(async ({ body }) => process(body));
- * ```
  */
 export function createRouteBuilder(options?: RouteBuilderOptions) {
   return new RouteBuilder(undefined, options);

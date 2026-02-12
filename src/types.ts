@@ -53,14 +53,6 @@ export interface TelemetryConfig {
     username?: string;
     password?: string;
   };
-  /**
-   * Pre-created ClickHouse client instance. When provided, the clickhouse
-   * connection config is ignored and this client is used directly.
-   * Use this when dynamic import('@clickhouse/client') doesn't work in
-   * your bundler (e.g., Next.js Turbopack).
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  clickhouseClient?: any;
   /** Server's own origin URL (e.g., 'https://enrichx402.com'). Auto-detected from request if not set. */
   origin?: string;
 }

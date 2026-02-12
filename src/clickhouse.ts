@@ -1,25 +1,15 @@
+import { createClient } from '@clickhouse/client';
 import type { McpResourceInvocation, TelemetryConfig } from './types';
 
-let clickhouseClient: ReturnType<typeof import('@clickhouse/client').createClient> | null = null;
+let clickhouseClient: ReturnType<typeof createClient> | null = null;
 
 const TABLE = 'mcp_resource_invocations';
 
 /**
- * Set a pre-created ClickHouse client directly.
- * Use this when dynamic import('@clickhouse/client') doesn't work
- * in your bundler environment.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function setClickhouseClient(client: any): void {
-  clickhouseClient = client;
-}
-
-/**
  * Initialize the ClickHouse client singleton.
- * Call once at app startup (e.g., in instrumentation.ts).
+ * createClient() is synchronous — no async needed.
  */
-export async function initClickhouse(config: TelemetryConfig['clickhouse']): Promise<void> {
-  const { createClient } = await import('@clickhouse/client');
+export function initClickhouse(config: TelemetryConfig['clickhouse']): void {
   clickhouseClient = createClient({
     url: config.url,
     database: config.database ?? 'default',

@@ -1,6 +1,6 @@
 {
   "name": "@merit-systems/x402-server-telemetry",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Telemetry package for x402-protected API servers. Extracts identity headers, logs invocations to ClickHouse, and extracts verified wallet addresses from x402 payments and SIWX auth.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -10,6 +10,16 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.js"
+    },
+    "./siwx": {
+      "types": "./dist/siwx.d.ts",
+      "import": "./dist/siwx.mjs",
+      "require": "./dist/siwx.js"
+    },
+    "./builder": {
+      "types": "./dist/builder.d.ts",
+      "import": "./dist/builder.mjs",
+      "require": "./dist/builder.js"
     }
   },
   "files": [
