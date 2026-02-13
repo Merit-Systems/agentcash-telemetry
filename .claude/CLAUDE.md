@@ -51,6 +51,9 @@ npm run build    # tsup only
 
 tsup produces 3 entry points (index, siwx, builder) in both CJS and ESM with declarations. All peer deps are marked external.
 
+### After publishing, commit both package.json and lockfile in consumers
+`pnpm update @merit-systems/x402-server-telemetry` bumps the specifier in BOTH `package.json` and `pnpm-lock.yaml`. Vercel's `frozen-lockfile` will reject deploys if only the lockfile is committed. Always `git add package.json pnpm-lock.yaml`.
+
 ## Consumers
 
 - **enrichx402** — uses core + `./builder` (wraps `createRouteBuilder` in its own X402RouteBuilder)
