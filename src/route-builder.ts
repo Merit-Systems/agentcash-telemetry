@@ -2,7 +2,7 @@
  * Convenience route builder that composes telemetry + validation + x402 wrapping.
  * This is optional — servers can use withTelemetry directly.
  *
- * Import from '@merit-systems/x402-server-telemetry/builder'.
+ * Import from '@agentcash/telemetry/builder'.
  * Requires peer deps: @x402/next, zod (^4), @x402/extensions
  */
 

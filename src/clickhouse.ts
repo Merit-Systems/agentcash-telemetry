@@ -23,21 +23,21 @@ export function initClickhouse(config: TelemetryConfig['clickhouse']): void {
  */
 export function pingClickhouse(): void {
   if (!clickhouseClient) {
-    console.error('[x402-telemetry] Cannot verify: ClickHouse client not initialized.');
+    console.error('[telemetry] Cannot verify: ClickHouse client not initialized.');
     return;
   }
   clickhouseClient
     .ping()
     .then((result) => {
       if (result.success) {
-        console.log('[x402-telemetry] ClickHouse connected');
+        console.log('[telemetry] ClickHouse connected');
       } else {
-        console.error('[x402-telemetry] ClickHouse ping failed');
+        console.error('[telemetry] ClickHouse ping failed');
       }
     })
     .catch((error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[x402-telemetry] ClickHouse ping failed:', message);
+      console.error('[telemetry] ClickHouse ping failed:', message);
     });
 }
 
@@ -48,9 +48,7 @@ export function pingClickhouse(): void {
 export function insertInvocation(data: McpResourceInvocation): void {
   try {
     if (!clickhouseClient) {
-      console.error(
-        '[x402-telemetry] ClickHouse client not initialized. Call initTelemetry() first.',
-      );
+      console.error('[telemetry] ClickHouse client not initialized. Call initTelemetry() first.');
       return;
     }
 
@@ -64,7 +62,7 @@ export function insertInvocation(data: McpResourceInvocation): void {
       .catch((error: unknown) => {
         try {
           const message = error instanceof Error ? error.message : String(error);
-          console.error('[x402-telemetry] ClickHouse insert failed:', message);
+          console.error('[telemetry] ClickHouse insert failed:', message);
         } catch {
           // Absolutely nothing escapes
         }
@@ -72,7 +70,7 @@ export function insertInvocation(data: McpResourceInvocation): void {
   } catch (error: unknown) {
     try {
       const message = error instanceof Error ? error.message : String(error);
-      console.error('[x402-telemetry] ClickHouse insert threw synchronously:', message);
+      console.error('[telemetry] ClickHouse insert threw synchronously:', message);
     } catch {
       // Absolutely nothing escapes
     }

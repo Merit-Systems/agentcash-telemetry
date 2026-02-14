@@ -1,7 +1,7 @@
 {
-  "name": "@merit-systems/x402-server-telemetry",
-  "version": "0.2.1",
-  "description": "Telemetry package for x402-protected API servers. Extracts identity headers, logs invocations to ClickHouse, and extracts verified wallet addresses from x402 payments and SIWX auth.",
+  "name": "@agentcash/telemetry",
+  "version": "0.3.0",
+  "description": "ClickHouse telemetry plugin for @agentcash/router. Logs request lifecycle, payments, settlements, and provider quota to ClickHouse.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
@@ -20,6 +20,11 @@
       "types": "./dist/builder.d.ts",
       "import": "./dist/builder.mjs",
       "require": "./dist/builder.js"
+    },
+    "./plugin": {
+      "types": "./dist/router-plugin.d.ts",
+      "import": "./dist/router-plugin.mjs",
+      "require": "./dist/router-plugin.js"
     }
   },
   "files": [
@@ -38,9 +43,10 @@
   },
   "keywords": [
     "x402",
+    "agentcash",
     "telemetry",
     "clickhouse",
-    "merit-systems"
+    "payments"
   ],
   "license": "MIT",
   "publishConfig": {
@@ -79,5 +85,6 @@
     "typescript-eslint": "^8.55.0",
     "vitest": "^4.0.18",
     "zod": "^4.1.13"
-  }
+  },
+  "packageManager": "pnpm@10.28.0"
 }

@@ -5,7 +5,7 @@
  * Delegates SIWX verification to @x402/extensions/sign-in-with-x.
  * This package does NOT implement SIWX itself.
  *
- * Import from '@merit-systems/x402-server-telemetry/siwx'.
+ * Import from '@agentcash/telemetry/siwx'.
  * Requires peer dep: @x402/extensions
  */
 

@@ -13,7 +13,7 @@ let configuredOrigin: string | undefined;
  * wrappers (withTelemetry, createRouteBuilder, etc.), NOT in instrumentation.ts.
  *
  * ```typescript
- * import { initTelemetry, withTelemetry } from '@merit-systems/x402-server-telemetry';
+ * import { initTelemetry, withTelemetry } from '@agentcash/telemetry';
  *
  * initTelemetry({
  *   clickhouse: {

@@ -5,6 +5,7 @@ export default defineConfig({
     index: 'src/index.ts',
     siwx: 'src/siwx.ts',
     builder: 'src/route-builder.ts',
+    'router-plugin': 'src/router-plugin.ts',
   },
   format: ['cjs', 'esm'],
   dts: true,
