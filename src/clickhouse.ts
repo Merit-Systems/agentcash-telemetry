@@ -15,6 +15,11 @@ export function initClickhouse(config: TelemetryConfig['clickhouse']): void {
     database: config.database ?? 'default',
     username: config.username ?? 'default',
     password: config.password ?? '',
+    // Serverless-safe defaults: disable keep-alive to prevent stale pooled
+    // sockets after Lambda freeze/thaw, and shorten the request timeout since
+    // inserts are fire-and-forget (a fast failure is fine).
+    keep_alive: { enabled: false },
+    request_timeout: 5_000,
   });
 }
 
