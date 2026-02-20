@@ -186,6 +186,11 @@ export function createTelemetryPlugin(config: TelemetryPluginConfig): RouterPlug
         );
       }
 
+      // 402 is the x402/MPP payment challenge — not a real invocation, skip logging
+      if (response.statusCode === 402) {
+        return;
+      }
+
       const row: McpResourceInvocation = {
         id: meta.requestId,
         x_wallet_address: meta.walletAddress?.toLowerCase() ?? null,

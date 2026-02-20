@@ -58,12 +58,15 @@ export function withTelemetry(handler: TelemetryHandler) {
       // Response body read failed — that's fine
     }
 
-    recordInvocation(meta, requestBodyString, {
-      status: response.status,
-      body: responseBodyString,
-      headers: JSON.stringify(Object.fromEntries(response.headers.entries())),
-      contentType: response.headers.get('content-type') ?? null,
-    });
+    // 402 is the x402/MPP payment challenge — not a real invocation, skip logging
+    if (response.status !== 402) {
+      recordInvocation(meta, requestBodyString, {
+        status: response.status,
+        body: responseBodyString,
+        headers: JSON.stringify(Object.fromEntries(response.headers.entries())),
+        contentType: response.headers.get('content-type') ?? null,
+      });
+    }
 
     // Re-throw the original error if it wasn't a NextResponse
     if (handlerError && !(handlerError instanceof NextResponse)) {
