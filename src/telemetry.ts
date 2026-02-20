@@ -5,6 +5,7 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
+import { after } from 'next/server';
 import type { TelemetryContext } from './types';
 import { extractRequestMeta, buildTelemetryContext, recordInvocation } from './telemetry-core';
 
@@ -14,6 +15,10 @@ type TelemetryHandler = (request: NextRequest, ctx: TelemetryContext) => Promise
  * Wrap a Next.js route handler with telemetry.
  * Extracts identity headers, logs the invocation to ClickHouse,
  * and auto-extracts verified wallet from x402 payment headers.
+ *
+ * Uses Next.js after() to defer the ClickHouse insert until after
+ * the response is sent. On Vercel this keeps the Lambda alive until
+ * the insert completes, avoiding frozen in-flight promises.
  *
  * The entire telemetry code path is wrapped in try/catch.
  * Telemetry failures never affect the response.
@@ -50,21 +55,31 @@ export function withTelemetry(handler: TelemetryHandler) {
       }
     }
 
-    // Log to ClickHouse (fire-and-forget)
-    let responseBodyString: string | null = null;
-    try {
-      responseBodyString = await response.clone().text();
-    } catch {
-      // Response body read failed — that's fine
-    }
-
     // 402 is the x402/MPP payment challenge — not a real invocation, skip logging
     if (response.status !== 402) {
-      recordInvocation(meta, requestBodyString, {
-        status: response.status,
-        body: responseBodyString,
-        headers: JSON.stringify(Object.fromEntries(response.headers.entries())),
-        contentType: response.headers.get('content-type') ?? null,
+      // Capture response metadata before returning (headers are available synchronously)
+      const status = response.status;
+      const responseHeaders = JSON.stringify(Object.fromEntries(response.headers.entries()));
+      const contentType = response.headers.get('content-type') ?? null;
+
+      // Defer the ClickHouse insert until after the response is sent
+      after(async () => {
+        try {
+          let responseBodyString: string | null = null;
+          try {
+            responseBodyString = await response.clone().text();
+          } catch {
+            // Response body read failed — that's fine
+          }
+          recordInvocation(meta, requestBodyString, {
+            status,
+            body: responseBodyString,
+            headers: responseHeaders,
+            contentType,
+          });
+        } catch {
+          // Telemetry never affects the response
+        }
       });
     }
 
