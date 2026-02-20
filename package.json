@@ -1,6 +1,6 @@
 {
   "name": "@agentcash/telemetry",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "ClickHouse telemetry plugin for @agentcash/router. Logs request lifecycle, payments, settlements, and provider quota to ClickHouse.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
