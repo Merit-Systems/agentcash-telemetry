@@ -176,6 +176,8 @@ export function createTelemetryPlugin(config: TelemetryPluginConfig): RouterPlug
     },
 
     onResponse(ctx: PluginContext, response: ResponseMeta) {
+      if (response.statusCode === 402) return;
+
       const tCtx = ctx as TelemetryPluginContext;
       const meta = tCtx._meta;
 
