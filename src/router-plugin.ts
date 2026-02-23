@@ -73,6 +73,10 @@ interface ResponseMeta {
   duration: number;
   contentType: string | null;
   headers: Record<string, string>;
+  /** Parsed request body (when .body() was used). undefined when no body was parsed. */
+  requestBody?: unknown;
+  /** Handler return value. undefined for raw Response returns (streams) or error paths. */
+  responseBody?: unknown;
 }
 
 interface ErrorEvent {
@@ -204,14 +208,16 @@ export function createTelemetryPlugin(config: TelemetryPluginConfig): RouterPlug
         referer: meta.referer,
         request_content_type: meta.contentType,
         request_headers: JSON.stringify(meta.headers),
-        request_body: null,
+        request_body:
+          response.requestBody !== undefined ? JSON.stringify(response.requestBody) : null,
 
         status_code: response.statusCode,
         status_text: response.statusText,
         duration: response.duration,
         response_content_type: response.contentType,
         response_headers: JSON.stringify(response.headers),
-        response_body: null,
+        response_body:
+          response.responseBody !== undefined ? JSON.stringify(response.responseBody) : null,
 
         created_at: new Date(),
       };
